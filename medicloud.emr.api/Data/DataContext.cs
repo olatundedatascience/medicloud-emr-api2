@@ -207,8 +207,10 @@ namespace medicloud.emr.api.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Data Source=52.251.49.79;Initial Catalog=medismartsemr_db;Persist Security Info=True;User ID=medismarts;Password=md2015@tech");
+                //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                //   optionsBuilder.UseSqlServer("Data Source=52.251.49.79;Initial Catalog=medismartsemr_db;Persist Security Info=True;User ID=medismarts;Password=md2015@tech");
+                optionsBuilder.UseSqlServer("Data Source=FCMB-IT-L16582\\TUNDE;Initial Catalog=medismartsemr_db;Persist Security Info=True;User ID=olatunde;Password=DVorak@23000;MultipleActiveResultSets=True");
+                // "Data Source=FCMB-IT-L16582\\TUNDE;Initial Catalog=medismartsemr_db;Persist Security Info=True;User ID=olatunde;Password=DVorak@23000;MultipleActiveResultSets=True"
             }
         }
 
@@ -3951,6 +3953,7 @@ namespace medicloud.emr.api.Data
 
             modelBuilder.Entity<Maritalstatus>(entity =>
             {
+                entity.HasKey(x => x.Maritalstatusid);
                 entity.ToTable("maritalstatus");
 
                 entity.Property(e => e.Maritalstatusid)
@@ -4274,20 +4277,25 @@ namespace medicloud.emr.api.Data
 
                 entity.Property(e => e.Address)
                     .HasColumnName("address")
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.AlternateId1)
                     .HasColumnName("alternateID1")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.AlternateId2)
                     .HasColumnName("alternateID2")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Autoid)
                     .HasColumnName("autoid")
+                    
+                    //.IsRequired(false)
                     .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Bloodgroupid).HasColumnName("bloodgroupid");
@@ -4311,67 +4319,80 @@ namespace medicloud.emr.api.Data
 
                 entity.Property(e => e.Datedeactivated)
                     .HasColumnName("datedeactivated")
+                    .IsRequired(false)
                     .HasColumnType("datetime");
 
                 entity.Property(e => e.Dateofdeath)
                     .HasColumnName("dateofdeath")
+                    .IsRequired(false)
                     .HasColumnType("date");
 
                 entity.Property(e => e.Deathcause)
                     .HasColumnName("deathcause")
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Dob)
                     .HasColumnName("dob")
+                    .IsRequired(false)
                     .HasColumnType("date");
 
                 entity.Property(e => e.Email)
                     .HasColumnName("email")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Emergencycontact)
                     .HasColumnName("emergencycontact")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Emergencyphone)
                     .HasColumnName("emergencyphone")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Employeraddress)
                     .HasColumnName("employeraddress")
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Employercity)
                     .HasColumnName("employercity")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Employercountry)
                     .HasColumnName("employercountry")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Employername)
                     .HasColumnName("employername")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Employerstateid).HasColumnName("employerstateid");
+                entity.Property(e => e.Employerstateid).HasColumnName("employerstateid").IsRequired(false);
 
-                entity.Property(e => e.Facilitatorid).HasColumnName("facilitatorid");
+                entity.Property(e => e.Facilitatorid).HasColumnName("facilitatorid").IsRequired(false);
 
                 entity.Property(e => e.Firstname)
                     .HasColumnName("firstname")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Genderid).HasColumnName("genderid");
 
                 entity.Property(e => e.Genotype)
                     .HasColumnName("genotype")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
@@ -4379,54 +4400,64 @@ namespace medicloud.emr.api.Data
 
                 entity.Property(e => e.Guardianname)
                     .HasColumnName("guardianname")
+                    .IsRequired(false)
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoclass1)
                     .HasColumnName("hmoclass1")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoclass2)
                     .HasColumnName("hmoclass2")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoclass3)
                     .HasColumnName("hmoclass3")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoname1)
                     .HasColumnName("hmoname1")
                     .HasMaxLength(250)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoname2)
                     .HasColumnName("hmoname2")
                     .HasMaxLength(250)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmoname3)
                     .HasColumnName("hmoname3")
                     .HasMaxLength(250)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Hmonumber)
                     .HasColumnName("HMONumber")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Homephone)
                     .HasColumnName("homephone")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Inactive).HasColumnName("inactive");
+                entity.Property(e => e.Inactive).HasColumnName("inactive").IsRequired(false);
 
                 entity.Property(e => e.Lastname)
                     .HasColumnName("lastname")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Leadid).HasColumnName("leadid");
@@ -4436,104 +4467,123 @@ namespace medicloud.emr.api.Data
                 entity.Property(e => e.Mobilephone)
                     .HasColumnName("mobilephone")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Mothername)
                     .HasColumnName("mothername")
                     .HasMaxLength(100)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nationality)
                     .HasColumnName("nationality")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nokinname)
                     .HasColumnName("nokinname")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nokoccupation)
                     .HasColumnName("nokoccupation")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nokphonenumber)
                     .HasColumnName("nokphonenumber")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nokrelationship)
                     .HasColumnName("nokrelationship")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Nokworkaddress)
                     .HasColumnName("nokworkaddress")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Occupation)
                     .HasColumnName("occupation")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Othername)
                     .HasColumnName("othername")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Photopath)
                     .HasColumnName("photopath")
                     .HasMaxLength(500)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Plantype).HasColumnName("plantype");
+                entity.Property(e => e.Plantype).HasColumnName("plantype").IsRequired(false);
 
                 entity.Property(e => e.Postalcode)
                     .HasColumnName("postalcode")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Principalcode)
                     .HasColumnName("principalcode")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
-                entity.Property(e => e.ProviderId).HasColumnName("ProviderID");
+                entity.Property(e => e.ProviderId).HasColumnName("ProviderID").IsRequired(false);
 
-                entity.Property(e => e.Refid).HasColumnName("refid");
+                entity.Property(e => e.Refid).HasColumnName("refid").IsRequired(false);
 
                 entity.Property(e => e.Relationship)
                     .HasColumnName("relationship")
+                    .IsRequired(false)
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Securityid)
                     .HasColumnName("securityid")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Securitynumber)
                     .HasColumnName("securitynumber")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
-                entity.Property(e => e.Servicetype).HasColumnName("servicetype");
+                entity.Property(e => e.Servicetype).HasColumnName("servicetype").IsRequired(false);
 
-                entity.Property(e => e.Sponsid).HasColumnName("sponsid");
+                entity.Property(e => e.Sponsid).HasColumnName("sponsid").IsRequired(false);
 
-                entity.Property(e => e.Stateid).HasColumnName("stateid");
+                entity.Property(e => e.Stateid).HasColumnName("stateid").IsRequired(false);
 
                 entity.Property(e => e.Title)
                     .HasColumnName("title")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Workphone)
                     .HasColumnName("workphone")
                     .HasMaxLength(50)
+                    .IsRequired(false)
                     .IsUnicode(false);
+
 
                 entity.HasOne(d => d.Bloodgroup)
                     .WithMany(p => p.Patient)
@@ -4563,32 +4613,33 @@ namespace medicloud.emr.api.Data
                 entity.HasOne(d => d.Lead)
                     .WithMany(p => p.Patient)
                     .HasForeignKey(d => d.Leadid)
-                    .HasConstraintName("FK_Leadsource_Patient");
+                    .HasConstraintName("FK_Leadsource_Patient").IsRequired(false);
 
                 entity.HasOne(d => d.Maritalstatus)
                     .WithMany(p => p.Patient)
+                //    .IsRequired(false)
                     .HasForeignKey(d => d.Maritalstatusid)
-                    .HasConstraintName("FK_Marital_Patient");
+                    .HasConstraintName("FK_Marital_Patient").IsRequired(false);
 
                 entity.HasOne(d => d.Provider)
                     .WithMany(p => p.Patient)
                     .HasForeignKey(d => d.ProviderId)
-                    .HasConstraintName("fk_patient_accountmanager");
+                    .HasConstraintName("fk_patient_accountmanager").IsRequired(false);
 
                 entity.HasOne(d => d.Ref)
                     .WithMany(p => p.Patient)
                     .HasForeignKey(d => d.Refid)
-                    .HasConstraintName("FK_Referral_Patient");
+                    .HasConstraintName("FK_Referral_Patient").IsRequired(false);
 
                 entity.HasOne(d => d.Spons)
                     .WithMany(p => p.Patient)
                     .HasForeignKey(d => d.Sponsid)
-                    .HasConstraintName("FK_Sponsor_Patient");
+                    .HasConstraintName("FK_Sponsor_Patient").IsRequired(false);
 
                 entity.HasOne(d => d.State)
                     .WithMany(p => p.Patient)
                     .HasForeignKey(d => d.Stateid)
-                    .HasConstraintName("State_Patient");
+                    .HasConstraintName("State_Patient").IsRequired(false);
             });
 
             modelBuilder.Entity<PatientMedicalHistory>(entity =>

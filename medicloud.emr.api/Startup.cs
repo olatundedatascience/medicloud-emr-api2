@@ -39,15 +39,20 @@ namespace medicloud.emr.api
             services.AddControllers(setupActions =>
             {
                 setupActions.ReturnHttpNotAcceptable = true;
-            }).AddXmlDataContractSerializerFormatters()
+                //setupAction
+            })//.AddXmlDataContractSerializerFormatters()
             
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.IgnoreNullValues = true;
                 options.JsonSerializerOptions.WriteIndented = true;
+               
                 
                 // .SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
                 //options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            }).AddNewtonsoftJson(c => {
+                c.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+
             });
 
             services.AddCors(options =>
@@ -61,15 +66,17 @@ namespace medicloud.emr.api
 
             Configuration.Bind(nameof(SwaggerSettings), swaggerSettings);
 
-            //services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc(swaggerSettings.Title, new Microsoft.OpenApi.Models.OpenApiInfo()
-            //    {
-            //        Version = swaggerSettings.Version,
-            //        Description = swaggerSettings.Description
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc(swaggerSettings.Title, new Microsoft.OpenApi.Models.OpenApiInfo()
+                {
+                    Version = swaggerSettings.Version,
+                    Description = swaggerSettings.Description
+                    
+                    
 
-            //    });
-            //});
+                });
+            });
 
             services.AddAuthentication(options =>
             {
@@ -93,7 +100,10 @@ namespace medicloud.emr.api
             });
 
             services.AddScoped<MockDataRepository>();
-            services.AddSingleton<IPatientRepo, PatientRepo>();
+            services.AddScoped<IPatientRepo, PatientRepo>();
+            services.AddScoped<ITitleRepo, TitleRepo>();
+            services.AddScoped<IPatientServices, PatientService>();
+            services.AddScoped<IBloodGroupRepo, BloodGroupRepo>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<ILocationRepository, LocationRepository>();
@@ -122,21 +132,15 @@ namespace medicloud.emr.api
             //});
 
 
-            //app.UseExceptionMiddleware();
+            
+
+            // app.UseExceptionMiddleware();
 
             app.UseRouting();
 
             
 
-            //app.UseSwagger(c =>
-            //{
-            //    c.RouteTemplate = swaggerSettings.RouteTemplate;
-            //});
-
-            //app.UseSwaggerUI(c =>
-            //{
-            //    c.SwaggerEndpoint(swaggerSettings.RouteEndpoint, swaggerSettings.Title);
-            //});
+           
             app.UseAuthentication();
             
             app.UseAuthorization();
@@ -146,6 +150,15 @@ namespace medicloud.emr.api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+            app.UseSwagger(c =>
+            {
+                // c.RouteTemplate = swaggerSettings.RouteTemplate;
+            });
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint(swaggerSettings.RouteEndpoint, swaggerSettings.Title);
             });
         }
     }

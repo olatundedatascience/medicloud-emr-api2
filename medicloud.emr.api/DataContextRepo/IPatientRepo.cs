@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using medicloud.emr.api.Data;
 using medicloud.emr.api.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace medicloud.emr.api.DataContextRepo
 {
@@ -10,27 +12,65 @@ namespace medicloud.emr.api.DataContextRepo
     {
         Task<IQueryable<Patient>> SearchByValue(string searchValue);
         void Close();
+        string AddPatient(Patient patient);
+        Task<bool> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "");
+        string AddDependantPatient(Patient patient);
+        Task<IEnumerable<Patient>> SearchForDependeant(string filter, string filterValue);
     }
 
     public class PatientRepo : IPatientRepo
     {
         private IDataContextRepo<Patient> _db;
+        private DataContext ctx;
 
         public PatientRepo()
         {
             _db = new DataContextRepo<Patient>();
+            ctx = new DataContext();
         }
 
+        private string generatePatientId()
+        {
+            string _query = "[patient_reg_no_generate]";
+            _db.ExecutStoredProcedure(_query, out var patientId);
 
+            return patientId;
+           
+
+        }
+
+        private string generateFamilyNumber()
+        {
+            string _query = "[patient_fmaily_no_generate]";
+            _db.ExecutStoredProcedure(_query, out var familyNumber);
+            return familyNumber;
+        }
+
+        public Task<bool> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "")
+        {
+            //string formattedQuery = $"'%{firstname}%'";
+
+            Task<bool> searchForRecord = new Task<bool>(() =>
+            {
+                string _query = $"select firstname from [Patient] where (firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or (othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or ( mothername = '{mothername}' and othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}')";
+                var found = _db.ExecuteRawSql(_query).Count() > 0;
+
+                return found;
+            });
+            searchForRecord.Start();
+            return searchForRecord;
+            
+        }
         public Task<IQueryable<Patient>> SearchByValue(string searchValue)
         {
             string formattedQuery = $"'%{searchValue}%'";
-            string query = $"select * from [Patient] where firstname like {formattedQuery} or lastname like {formattedQuery}  or othername like {formattedQuery} or address like {formattedQuery} or mothername like {formattedQuery} or mobilephone like {formattedQuery} or email like {formattedQuery} or employername like {formattedQuery}";
+            string query = $"select * from [Patient] where (firstname is not null and firstname like {formattedQuery} or patientid is not null and patientid like {formattedQuery} or lastname is not null and lastname like {formattedQuery} or othername is not null and othername like {formattedQuery} or address is not null and address like {formattedQuery} or mothername is not null and mothername like {formattedQuery} or mobilephone is not null and mobilephone like {formattedQuery} or email is not null and email like {formattedQuery} or employername is not null and employername like {formattedQuery})";
             //string query = $"select * from [Patient] where firstname like %" + searchValue + "%";
             // $"select * from [Patient] where firstname like {formattedQuery}"
-            var result = _db.ExecuteRawSql(query);
+            //var result = _db.ExecuteRawSql(query);
+            var result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender);
 
-            return Task.FromResult(result);
+            return Task.FromResult<IQueryable<Patient>>(result);
         }
 
         //public Task<IQueryable<Patient>> SearchByValue(string searchValue)
@@ -112,6 +152,81 @@ namespace medicloud.emr.api.DataContextRepo
         public void Close()
         {
             this._db.CloseConnection();
+        }
+
+        public string AddDependantPatient(Patient patient)
+        {
+            try
+            {
+                string newPatientId = generatePatientId();
+              //  string familyNumber = generateFamilyNumber();
+                patient.Patientid = newPatientId;
+              
+                if (_db.AddNew(patient))
+                {
+                    return newPatientId;
+                }
+
+                return null;
+            }
+            catch (Exception es)
+            {
+
+                throw es;
+            }
+        }
+        public string AddPatient(Patient patient)
+        {
+            try
+            {
+                string newPatientId =  generatePatientId();
+                string familyNumber = generateFamilyNumber();
+                patient.Patientid = newPatientId;
+                patient.FamilyNumber = familyNumber;
+                if(_db.AddNew(patient))
+                {
+                    return newPatientId+":"+ familyNumber;
+                }
+
+                return null;
+            }
+            catch (Exception es)
+            {
+
+                throw es;
+            }
+        }
+
+        public Task<IEnumerable<Patient>> SearchForDependeant(string filter, string filterValue)
+        {
+            string formattedQuery = $"'%{filterValue}%'";
+            string query = $"select * from [Patient] where (firstname is not null and firstname like {formattedQuery} or patientid is not null and patientid like {formattedQuery} or lastname is not null and lastname like {formattedQuery} or othername is not null and othername like {formattedQuery} or address is not null and address like {formattedQuery} or mothername is not null and mothername like {formattedQuery} or mobilephone is not null and mobilephone like {formattedQuery} or email is not null and email like {formattedQuery} or employername is not null and employername like {formattedQuery})";
+            //string query = $"select * from [Patient] where firstname like %" + searchValue + "%";
+            // $"select * from [Patient] where firstname like {formattedQuery}"
+            //var result = _db.ExecuteRawSql(query);
+
+            //return Task.FromResult(result);
+            IEnumerable<Patient> result = null;
+            switch(filter)
+            {
+                case "patientId":
+                    query = $"select * from [Patient] where patientid is not null and patientid like {formattedQuery}";
+                    // result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender);
+                    break;
+                case "phoneNumber":
+                    query = $"select * from [Patient] where mobilephone is not null and mobilephone like {formattedQuery} or workphone is not null and workphone like {formattedQuery} or homephone is not null and homephone like {formattedQuery}";
+                    //result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender);
+                    break;
+                case "lastName":
+                    query = $"select * from [Patient] where lastname is not null and lastname like {formattedQuery}";
+                    // result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender);
+                    break;
+            }
+
+            return Task.FromResult<IEnumerable<Patient>>(result);
         }
     }
 }

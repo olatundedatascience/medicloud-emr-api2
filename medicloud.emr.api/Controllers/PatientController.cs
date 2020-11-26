@@ -6,19 +6,137 @@ using System.Threading.Tasks;
 using medicloud.emr.api.Helpers;
 using medicloud.emr.api.DataContextRepo;
 using medicloud.emr.api.DTOs;
+using medicloud.emr.api.Services;
+using medicloud.emr.api.Entities;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json;
+using System.Reflection;
+using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace medicloud.emr.api.Controllers
 {
+    
     [ApiController]
     public class PatientController : ControllerBase
     {
         private IPatientRepo patientRepo;
         private BaseResponse _reponse;
-        public PatientController(IPatientRepo patientRepo)
+        private IPatientServices ps;
+        //private IBloodGroupRepo bloodGroupRepo;
+       
+        public PatientController(IPatientRepo patientRepo, 
+            //IBloodGroupRepo bloodGroupRepo,
+            ITitleRepo titleRepo,
+            IPatientServices ps)
         {
             this.patientRepo = patientRepo;
+            this.ps = ps;
+            //this.bloodGroupRepo = bloodGroupRepo;
+            
+                 
         }
 
+        [Route(ApiRoutes.isPatientExistBefore)]
+        [HttpPost]
+        public async Task<IActionResult> IsPatientExistBefore([FromBody] PatientLookUpDTO dto)
+        {
+            var isFound = ps.isPatientExist(dto.Firstname, dto.Lastname, dto.dob, dto.mobilephone, dto.email);
+            if(isFound)
+            {
+                _reponse = BaseResponse.GetResponse(isFound, $"patient with {dto.Lastname} {dto.Firstname} as name already exist", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(false, "you can continue", "00");
+            return Ok(_reponse);
+        }
+
+
+
+        [Route(ApiRoutes.registerDependant)]
+        [HttpPost]
+        public async Task<IActionResult> RegisterDependantData([FromQuery] string familyNumber, [FromBody] PatientDTO patient)
+        {
+            patient.IsDependant = true;
+            var result = ps.AddDepentdantData(familyNumber, patient);
+            if (result != null)
+            {
+                string spliResult = result;
+                var resultOut = new
+                {
+                    PatientRegNumber = spliResult
+                    
+                };
+                _reponse = BaseResponse.GetResponse(resultOut, "patient registered", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(null, "patient failed to register", "99");
+            return BadRequest(_reponse);
+        }
+        [Route(ApiRoutes.newPatientRegistration)]
+        [HttpPost]
+        public async Task<IActionResult> RegisterNewPatient([FromBody]PatientDTO patient)
+        {
+            patient.IsDependant = false;
+            var result = ps.addNewPatient(patient);
+            if(result != null)
+            {
+                string[] spliResult = result.Split(":");
+                var resultOut = new
+                {
+                    PatientRegNumber = spliResult[0],
+                    PatientFamilyNumber = spliResult[1]
+                };
+                _reponse = BaseResponse.GetResponse(resultOut, "patient registered", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(null, "patient failed to register", "99");
+            return BadRequest(_reponse);
+        }
+
+        [Route("api/Patient/searchForDependant")]
+        [HttpGet]
+        public async Task<IActionResult> SearchForDependent([FromQuery] string searchFilter, [FromQuery] string searchValue)
+        {
+            var result = await patientRepo.SearchForDependeant(searchFilter, searchValue);
+            
+            if(result == null)
+            {
+                _reponse = BaseResponse.GetResponse(null, "no matched found", "99");
+                return BadRequest(_reponse);
+            }
+            
+            _reponse = BaseResponse.GetResponse(result, "success", "00");
+            return Ok(_reponse);
+        }
+
+        //[Route("coderbytes")]
+        //[HttpGet]
+        //public async Task<IActionResult> GetCoderBytes()
+        //{
+        //    WebRequest req = WebRequest.Create("https://coderbyte.com/api/challenges/json/json-cleaning");
+        //    WebResponse resp = req.GetResponse();
+
+        //    var ss = resp.GetResponseStream();
+
+        //    string result = "";
+        //    StreamReader rs = new StreamReader(ss);
+        //    string current = "";
+        //    while((current = rs.ReadLine())  != null) {
+        //        result += current;
+        //    }
+
+        //    string newResult = Regex. .Replace(result, "[(\\w+:), (\\w+:-), (\\w+:N/A)]");
+
+          
+
+        //    return Ok(result);
+        //}
+        
         [Route(ApiRoutes.searchForPatient)]
         [HttpGet]
         public async Task<IActionResult> SearchForPatient([FromRoute] string searchValue)
@@ -26,11 +144,16 @@ namespace medicloud.emr.api.Controllers
             try
             {
                 var returnedDataFromSearch = await patientRepo.SearchByValue(searchValue);
+                BaseResponse responseOut = null;
+                if(returnedDataFromSearch.Count() > 0)
+                {
+                    responseOut = BaseResponse.GetResponse(returnedDataFromSearch, $"searching for patient information with {searchValue}", "00");
 
-                _reponse = BaseResponse.GetResponse(returnedDataFromSearch, $"searching for patient information with {searchValue}", "00");
-
-                patientRepo.Close();
-                return Ok(_reponse);
+                    //  patientRepo.Close();
+                    return Ok(responseOut); 
+                }
+                responseOut = BaseResponse.GetResponse(null, "no match found", "99");
+                return BadRequest(responseOut);
 
             }
             catch(Exception es)

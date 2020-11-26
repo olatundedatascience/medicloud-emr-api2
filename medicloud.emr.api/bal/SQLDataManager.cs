@@ -8,7 +8,7 @@ using System.Configuration;
 using System.Web;
 
 
-public class SQLDataManager
+public class SQLDataManager : IDisposable
 {
 
     SqlCommand sqlCmd;          // holds the command
@@ -99,6 +99,13 @@ public class SQLDataManager
         sqlCmd.Parameters.AddWithValue(param, value);
     }
 
+    public void ExecuteStoredProcedure(string procedureName, out SqlDataReader reader)
+    {
+        var _readerObject = ExecuteDataReader(procedureName, CommandType.StoredProcedure);
+        reader = _readerObject;
+        
+    }
+
     public object GetOutputParameter(SqlParameter output)
     {
         object obj = output.Value;
@@ -124,6 +131,16 @@ public class SQLDataManager
 
         // return the adapter
         return (objAdapter);
+    }
+
+    public SqlDataReader ExecuteDataReader(string command, CommandType commandType)
+    {
+        sqlCmd = new SqlCommand(command);
+        sqlCmd.CommandType = commandType;
+        sqlCmd.Connection = sqlConn;
+        SqlDataReader _reader = sqlCmd.ExecuteReader();
+
+        return _reader;
     }
 
     public DataSet GetDataset(string sqlCommand, CommandType objType)
@@ -155,6 +172,11 @@ public class SQLDataManager
         ret = sqlCmd.ExecuteScalar().ToString();
 
         return ret;
+    }
+
+    public void Dispose()
+    {
+        ClosedbConnection();
     }
 }
 
