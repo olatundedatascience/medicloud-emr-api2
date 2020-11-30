@@ -16,6 +16,9 @@ namespace medicloud.emr.api.DataContextRepo
         Task<bool> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "");
         string AddDependantPatient(Patient patient);
         Task<IEnumerable<Patient>> SearchForDependeant(string filter, string filterValue);
+        bool SaveRegistrationLink(string link);
+        bool getRegistrationLinkStatus(string link);
+        string registerPatientFromLink(string link, Patient patientToUpdate);
     }
 
     public class PatientRepo : IPatientRepo
@@ -52,7 +55,7 @@ namespace medicloud.emr.api.DataContextRepo
 
             Task<bool> searchForRecord = new Task<bool>(() =>
             {
-                string _query = $"select firstname from [Patient] where (firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or (othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or ( mothername = '{mothername}' and othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}')";
+                string _query = $"select firstname from [Patient] where (firstname = '{firstname}' and lastname = '{lastname}') or (firstname = '{firstname}' and lastname = '{lastname}' and mobilephone = '{mobilePhone}') or (firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or (othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or ( mothername = '{mothername}' and othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}')";
                 var found = _db.ExecuteRawSql(_query).Count() > 0;
 
                 return found;
@@ -227,6 +230,75 @@ namespace medicloud.emr.api.DataContextRepo
             }
 
             return Task.FromResult<IEnumerable<Patient>>(result);
+        }
+
+        public bool SaveRegistrationLink(string link)
+        {
+            string regLink = $"{link}";
+            string patientId = generatePatientId();
+            string familyId = generateFamilyNumber();
+            var patient = new Patient()
+            {
+                Patientid = patientId,
+                FamilyNumber = familyId,
+                reglink = regLink
+                
+            };
+
+            return _db.AddNew(patient);
+        }
+
+        public string registerPatientFromLink(string link, Patient patientToUpdate)
+        {
+            ctx = null;
+            string newLink = $"{link}_1";
+
+            Patient getSingle = _db.GetSingle(x => x.reglink == link+"_0");
+            _db.CloseConnection();
+            if(getSingle == null)
+            {
+                return null;
+            }
+           
+            patientToUpdate.reglink = newLink;
+            patientToUpdate.FamilyNumber = getSingle.FamilyNumber;
+            patientToUpdate.Patientid = generatePatientId();
+            // patientToUpdate.Autoid = getSingle.Autoid;
+            //var result =  _db.Update(patientToUpdate);
+
+            //ctx.Entry<Patient>(patientToUpdate).State = EntityState.Modified;
+            //ctx.Entry<Patient>(patientToUpdate).Property(x => x.Autoid).IsModified = false;
+            bool result = false;
+            result = _db.AddNew(patientToUpdate);
+            
+          
+            if(!result)
+            {
+                return null;
+            }
+            _db.CloseConnection();
+            var deleted = _db.Delete(x => x.reglink == link + "_0" || x.Patientid == getSingle.Patientid);
+
+            return patientToUpdate.Patientid + ":" + patientToUpdate.FamilyNumber;
+        }
+        public bool getRegistrationLinkStatus(string link)
+        {
+            var find = _db.GetSingle(x => x.reglink == link);
+
+            if(find == null)
+            {
+                return false;
+            }
+
+            var split_input = link.Split("_");
+            string status = split_input[1];
+
+            if(status == "1")
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

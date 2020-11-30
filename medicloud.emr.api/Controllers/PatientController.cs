@@ -38,6 +38,61 @@ namespace medicloud.emr.api.Controllers
                  
         }
 
+        [Route(ApiRoutes.saveRegistrationLink)]
+        [HttpPost]
+        public async Task<IActionResult> SaveRegistrationLink([FromRoute] string link)
+        {
+            // string[] split_input = link.Split("_");
+            var isFound = patientRepo.SaveRegistrationLink(link);
+            if (isFound)
+            {
+                _reponse = BaseResponse.GetResponse(isFound, $"self registration link created", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(false, "self registration link created failed to create", "00");
+            return Ok(_reponse);
+        }
+
+
+        [Route("api/Patient/registerPatientFromLink/{link}")]
+        [HttpPost]
+        public async Task<IActionResult> registerPatientFromLink([FromRoute] string link, [FromBody] PatientDTO dto)
+        {
+
+            var result = patientRepo.registerPatientFromLink(link, (Patient)dto);
+            if (result != null)
+            {
+                string[] spliResult = result.Split(":");
+                var resultOut = new
+                {
+                    PatientRegNumber = spliResult[0],
+                    PatientFamilyNumber = spliResult[1]
+                };
+                _reponse = BaseResponse.GetResponse(resultOut, "patient registered", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(null, "patient failed to register", "99");
+            return BadRequest(_reponse);
+        }
+
+        [Route("api/Patient/checkLinkValidity/{link}")]
+        [HttpGet]
+        public async Task<IActionResult> checkLinkValidity([FromRoute] string link)
+        {
+            // string[] split_input = link.Split("_");
+            var isFound = patientRepo.getRegistrationLinkStatus(link);
+            if (isFound)
+            {
+                _reponse = BaseResponse.GetResponse(isFound, $"registration link is valid", "00");
+                return Ok(_reponse);
+            }
+
+            _reponse = BaseResponse.GetResponse(false, "registration link is invalid or expire", "99");
+            return Ok(_reponse);
+        }
+
         [Route(ApiRoutes.isPatientExistBefore)]
         [HttpPost]
         public async Task<IActionResult> IsPatientExistBefore([FromBody] PatientLookUpDTO dto)

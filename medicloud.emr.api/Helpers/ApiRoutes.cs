@@ -13,6 +13,7 @@ namespace medicloud.emr.api.Helpers
         public const string newPatientRegistration = baseUrl + "/" + Patient.registerNewPatient;
         public const string isPatientExistBefore = baseUrl + "/" + Patient.checkIfPatientExist;
         public const string registerDependant = baseUrl + "/" + Patient.registerDependantPatient;
+        public const string saveRegistrationLink = baseUrl + "/" + Patient.saveRegistrationLink;
         public const string SetUp = "api/setup";
 
         public class BloodGroupOperations
@@ -42,6 +43,7 @@ namespace medicloud.emr.api.Helpers
             public const string registerNewPatient = "newPatient";
             public const string checkIfPatientExist = "lookUpPatient";
             public const string registerDependantPatient = "registerDependantPatient";
+            public const string saveRegistrationLink = "saveRegistrationLink/{link}";
         }
         private class bloodgroup
         {

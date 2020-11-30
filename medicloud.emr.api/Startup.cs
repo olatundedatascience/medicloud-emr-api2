@@ -100,9 +100,9 @@ namespace medicloud.emr.api
             });
 
             services.AddScoped<MockDataRepository>();
-            services.AddScoped<IPatientRepo, PatientRepo>();
+            services.AddTransient<IPatientRepo, PatientRepo>();
             services.AddScoped<ITitleRepo, TitleRepo>();
-            services.AddScoped<IPatientServices, PatientService>();
+            services.AddTransient<IPatientServices, PatientService>();
             services.AddScoped<IBloodGroupRepo, BloodGroupRepo>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
@@ -134,7 +134,7 @@ namespace medicloud.emr.api
 
             
 
-            // app.UseExceptionMiddleware();
+            app.UseExceptionMiddleware();
 
             app.UseRouting();
 

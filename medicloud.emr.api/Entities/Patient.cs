@@ -108,6 +108,7 @@ namespace medicloud.emr.api.Entities
         public string status { get; set; }
         public long? referalby { get; set; }
         public string dependantrelationship { get; set; }
+        public string reglink { get; set; }
 
         public virtual BloodGroup Bloodgroup { get; set; }
         public virtual EnrolleeType Cardtype { get; set; }
