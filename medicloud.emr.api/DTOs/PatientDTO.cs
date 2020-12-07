@@ -259,7 +259,7 @@ namespace medicloud.emr.api.DTOs
         public int? ProviderId { get; set; }
         public string AlternateId1 { get; set; }
         public string AlternateId2 { get; set; }
-        public int? Autoid { get; set; }
+        // public int? Autoid { get; set; }
         public string Servicetype { get; set; }
         public string Plantype { get; set; }
         public int? Maritalstatusid { get; set; }
@@ -279,6 +279,7 @@ namespace medicloud.emr.api.DTOs
         public string status { get; set; }
         public long? referalby { get; set; }
         public string dependantrelationship { get; set; }
+        public List<PatientPayorTypes> payors { get; set; }
 
         public static explicit operator Patient(PatientDTO dt)
         {

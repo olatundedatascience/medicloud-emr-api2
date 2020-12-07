@@ -12,11 +12,14 @@ namespace medicloud.emr.api.DataContextRepo
     {
        // bool SaveChanges();
         bool AddNew(T entity);
+        void AddMultiples(T[] entities);
         bool Update(T entity);
         T GetSingle(Func<T, bool> filter);
         IQueryable<T> GetAll(Func<T, bool> filter);
         IEnumerable<T> GetAll();
         bool Delete(Func<T, bool> filters);
+        int count();
+        int count(Func<T, bool> filter);
         bool Delete(T entity);
         IQueryable<T> ExecuteRawSql(string query);
         void CloseConnection();
@@ -121,6 +124,25 @@ namespace medicloud.emr.api.DataContextRepo
         public void CloseConnection()
         {
             _dbContext.Database.CloseConnection();
+        }
+
+        public void AddMultiples(T[] entities)
+        {
+            foreach(var t in entities)
+            {
+                AddNew(t);
+                
+            }
+        }
+
+        public int count()
+        {
+            return dbSet.Count();
+        }
+
+        public int count(Func<T, bool> filter)
+        {
+            return dbSet.Count(filter);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace medicloud.emr.api.Entities
         public string Title { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
-        public string Othername { get; set; } = "";
+        public string Othername { get; set; }
         public DateTime? Dob { get; set; }
         public string Securityid { get; set; }
         public string Securitynumber { get; set; }
@@ -76,8 +76,6 @@ namespace medicloud.emr.api.Entities
         public string Relationship { get; set; }
         public DateTime? Dateadded { get; set; }
         public bool? Inactive { get; set; }
-        public bool IsDependant { get; set; }
-        public string FamilyNumber { get; set; }
         public int? Cardtypeid { get; set; }
         public DateTime? Datedeactivated { get; set; }
         public string Hmonumber { get; set; }
@@ -85,7 +83,7 @@ namespace medicloud.emr.api.Entities
         public int? ProviderId { get; set; }
         public string AlternateId1 { get; set; }
         public string AlternateId2 { get; set; }
-        public int? Autoid { get; set; }
+        public int Autoid { get; set; }
         public string Servicetype { get; set; }
         public string Plantype { get; set; }
         public int? Maritalstatusid { get; set; }
@@ -97,18 +95,20 @@ namespace medicloud.emr.api.Entities
         public int? Genotypeid { get; set; }
         public int? Bloodgroupid { get; set; }
         public int? Sponsid { get; set; }
-        public int? identificationtypeid { get; set; }
-        public string identificationnumber { get; set; }
-        public string payor { get; set; }
         public int? Facilitatorid { get; set; }
         public int? Refid { get; set; }
         public int? Leadid { get; set; }
-        public string enrolleeno { get; set; }
-        public string employeenumber { get; set; }
-        public string status { get; set; }
-        public long? referalby { get; set; }
-        public string dependantrelationship { get; set; }
-        public string reglink { get; set; }
+        public bool? IsDependant { get; set; }
+        public string FamilyNumber { get; set; }
+        public int? Identificationtypeid { get; set; }
+        public string Identificationnumber { get; set; }
+        public string Payor { get; set; }
+        public string Enrolleeno { get; set; }
+        public string Employeenumber { get; set; }
+        public string Status { get; set; }
+        public long? Referalby { get; set; }
+        public string Dependantrelationship { get; set; }
+        public string Reglink { get; set; }
 
         public virtual BloodGroup Bloodgroup { get; set; }
         public virtual EnrolleeType Cardtype { get; set; }
@@ -124,6 +124,7 @@ namespace medicloud.emr.api.Entities
         public virtual ICollection<Admission> Admission { get; set; }
         public virtual ICollection<Bill> Bill { get; set; }
         public virtual ICollection<BillPayable> BillPayable { get; set; }
+        public virtual ICollection<PatientPayorTypes> PayorTypes { get; set; }
         public virtual ICollection<Biometric> Biometric { get; set; }
         public virtual ICollection<BirthRegister> BirthRegister { get; set; }
         public virtual ICollection<ConsultationCheck> ConsultationCheck { get; set; }

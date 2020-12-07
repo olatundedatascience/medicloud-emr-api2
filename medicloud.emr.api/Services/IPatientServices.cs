@@ -11,8 +11,10 @@ namespace medicloud.emr.api.Services
     public interface IPatientServices
     {
         string addNewPatient(PatientDTO patient);
-        bool isPatientExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername="", string mothername="");
+        IEnumerable<Patient> isPatientExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername="", string mothername="");
         string AddDepentdantData(string familyNumber, PatientDTO patient);
+
+        Task<bool> updatePatientInfo(Patient patient);
     }
 
 
@@ -63,7 +65,7 @@ namespace medicloud.emr.api.Services
             }
         }
 
-        public bool isPatientExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "")
+        public IEnumerable<Patient> isPatientExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "")
         {
             try
             {
@@ -72,8 +74,13 @@ namespace medicloud.emr.api.Services
             }
             catch
             {
-                return false;
+                return null;
             }
+        }
+
+        public async Task<bool> updatePatientInfo(Patient patient)
+        {
+            return await Task.Factory.StartNew(() => _repo.UpdatePatient(patient));
         }
     }
 }

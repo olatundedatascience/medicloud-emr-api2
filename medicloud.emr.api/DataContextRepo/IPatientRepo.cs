@@ -13,12 +13,14 @@ namespace medicloud.emr.api.DataContextRepo
         Task<IQueryable<Patient>> SearchByValue(string searchValue);
         void Close();
         string AddPatient(Patient patient);
-        Task<bool> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "");
+        Task<IEnumerable<Patient>> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "");
         string AddDependantPatient(Patient patient);
         Task<IEnumerable<Patient>> SearchForDependeant(string filter, string filterValue);
         bool SaveRegistrationLink(string link);
         bool getRegistrationLinkStatus(string link);
         string registerPatientFromLink(string link, Patient patientToUpdate);
+        bool UpdatePatient(Patient patient);
+        Task<IEnumerable<Patient>> searchForPatientToUpdate(string filter, string filterValue);
     }
 
     public class PatientRepo : IPatientRepo
@@ -49,16 +51,16 @@ namespace medicloud.emr.api.DataContextRepo
             return familyNumber;
         }
 
-        public Task<bool> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "")
+        public Task<IEnumerable<Patient>> IsPatientRecordExist(string firstname, string lastname, string dob, string mobilePhone, string email, string othername = "", string mothername = "")
         {
             //string formattedQuery = $"'%{firstname}%'";
 
-            Task<bool> searchForRecord = new Task<bool>(() =>
+            Task<IEnumerable<Patient>> searchForRecord = new Task<IEnumerable<Patient>>(() =>
             {
-                string _query = $"select firstname from [Patient] where (firstname = '{firstname}' and lastname = '{lastname}') or (firstname = '{firstname}' and lastname = '{lastname}' and mobilephone = '{mobilePhone}') or (firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or (othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or ( mothername = '{mothername}' and othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}')";
-                var found = _db.ExecuteRawSql(_query).Count() > 0;
+                string _query = $"select * from [Patient] where (firstname = '{firstname}' and lastname = '{lastname}') or (firstname = '{firstname}' and lastname = '{lastname}' and mobilephone = '{mobilePhone}') or (firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or (othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}') or ( mothername = '{mothername}' and othername = '{othername}' and firstname = '{firstname}' and lastname = '{lastname}' and dob = '{dob}' and mobilephone = '{mobilePhone}')";
+                var found = _db.ExecuteRawSql(_query);
 
-                return found;
+                return found.AsEnumerable();
             });
             searchForRecord.Start();
             return searchForRecord;
@@ -200,6 +202,37 @@ namespace medicloud.emr.api.DataContextRepo
             }
         }
 
+        public Task<IEnumerable<Patient>> searchForPatientToUpdate(string filter, string filterValue)
+        {
+            string formattedQuery = $"'%{filterValue}%'";
+            string query = $"select * from [Patient] where (firstname is not null and firstname like {formattedQuery} or patientid is not null and patientid like {formattedQuery} or lastname is not null and lastname like {formattedQuery} or othername is not null and othername like {formattedQuery} or address is not null and address like {formattedQuery} or mothername is not null and mothername like {formattedQuery} or mobilephone is not null and mobilephone like {formattedQuery} or email is not null and email like {formattedQuery} or employername is not null and employername like {formattedQuery})";
+            //string query = $"select * from [Patient] where firstname like %" + searchValue + "%";
+            // $"select * from [Patient] where firstname like {formattedQuery}"
+            //var result = _db.ExecuteRawSql(query);
+
+            //return Task.FromResult(result);
+            IEnumerable<Patient> result = null;
+            switch (filter)
+            {
+                case "patientId":
+                    query = $"select * from [Patient] where patientid is not null and patientid like {formattedQuery}";
+                    // result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender).Include(x=>x.PayorTypes);
+                    break;
+                case "phoneNumber":
+                    query = $"select * from [Patient] where mobilephone is not null and mobilephone like {formattedQuery} or workphone is not null and workphone like {formattedQuery} or homephone is not null and homephone like {formattedQuery}";
+                    //result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender).Include(x => x.PayorTypes);
+                    break;
+                case "lastName":
+                    query = $"select * from [Patient] where lastname is not null and lastname like {formattedQuery}";
+                    // result = _db.ExecuteRawSql(query);
+                    result = ctx.Patient.FromSqlRaw(query).Include(x => x.Gender).Include(x => x.PayorTypes);
+                    break;
+            }
+
+            return Task.FromResult<IEnumerable<Patient>>(result);
+        }
         public Task<IEnumerable<Patient>> SearchForDependeant(string filter, string filterValue)
         {
             string formattedQuery = $"'%{filterValue}%'";
@@ -241,7 +274,7 @@ namespace medicloud.emr.api.DataContextRepo
             {
                 Patientid = patientId,
                 FamilyNumber = familyId,
-                reglink = regLink
+                Reglink = regLink
                 
             };
 
@@ -253,14 +286,14 @@ namespace medicloud.emr.api.DataContextRepo
             ctx = null;
             string newLink = $"{link}_1";
 
-            Patient getSingle = _db.GetSingle(x => x.reglink == link+"_0");
+            Patient getSingle = _db.GetSingle(x => x.Reglink == link+"_0");
             _db.CloseConnection();
             if(getSingle == null)
             {
                 return null;
             }
            
-            patientToUpdate.reglink = newLink;
+            patientToUpdate.Reglink = newLink;
             patientToUpdate.FamilyNumber = getSingle.FamilyNumber;
             patientToUpdate.Patientid = generatePatientId();
             // patientToUpdate.Autoid = getSingle.Autoid;
@@ -277,13 +310,13 @@ namespace medicloud.emr.api.DataContextRepo
                 return null;
             }
             _db.CloseConnection();
-            var deleted = _db.Delete(x => x.reglink == link + "_0" || x.Patientid == getSingle.Patientid);
+            var deleted = _db.Delete(x => x.Reglink == link + "_0" || x.Patientid == getSingle.Patientid);
 
             return patientToUpdate.Patientid + ":" + patientToUpdate.FamilyNumber;
         }
         public bool getRegistrationLinkStatus(string link)
         {
-            var find = _db.GetSingle(x => x.reglink == link);
+            var find = _db.GetSingle(x => x.Reglink == link);
 
             if(find == null)
             {
@@ -299,6 +332,14 @@ namespace medicloud.emr.api.DataContextRepo
             }
 
             return true;
+        }
+
+        public bool UpdatePatient(Patient patient)
+        {
+            ctx.Entry<Patient>(patient).State = EntityState.Modified;
+            ctx.Entry<Patient>(patient).Property(x => x.Autoid).IsModified = false;
+            return ctx.SaveChanges() > 0;
+            //return _db.Update(patient);
         }
     }
 }

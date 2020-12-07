@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace medicloud.emr.api.Entities
 {
@@ -12,8 +10,6 @@ namespace medicloud.emr.api.Entities
             Patient = new HashSet<Patient>();
         }
 
-        [Key]
-        //[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Maritalstatusid { get; set; }
         public string Maritalstatusname { get; set; }
         public DateTime? Dateadded { get; set; }
